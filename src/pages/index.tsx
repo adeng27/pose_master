@@ -1,11 +1,68 @@
+import { DrawingUtils, FilesetResolver, PoseLandmarker } from "@mediapipe/tasks-vision";
 import Head from "next/head";
-import Link from "next/link";
+import Image from "next/image";
+import { useRef } from "react";
 
 import { api } from "~/utils/api";
 
-export default function Home() {
-  const hello = api.post.hello.useQuery({ text: "from tRPC" });
+let poseLandmarker: PoseLandmarker;
 
+const createPoseLandmarker = async () => {
+  const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+  poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: "/pose_landmarker_full.task",
+      delegate: "GPU"
+    },
+    runningMode: "IMAGE",
+    numPoses: 2
+  });
+}
+
+const CustImage = (props: {src: string, height: number, width: number}) => {
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const handleClick = () => {
+    const imageSrc = imageRef.current!;
+    if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
+      console.log(result, result)
+      const canvas = document.createElement("canvas");
+      canvas.setAttribute("class", "canvas");
+      canvas.setAttribute("width", props.width + "px");
+      canvas.setAttribute("height", props.height + "px");
+
+      const div = document.getElementById("target")!
+      div.appendChild(canvas);
+      const canvasCtx = canvas.getContext("2d")!;
+      const drawingUtils = new DrawingUtils(canvasCtx);
+      for (const landmark of result.landmarks) {
+      drawingUtils.drawLandmarks(landmark, {
+        radius: (data) => DrawingUtils.lerp(data.from!.z, -0.15, 0.1, 5, 1)
+      });
+      drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS);
+    }
+    })
+  }
+
+  return (
+    <div className="relative">
+      <div id="target" className="absolute border-solid border-2 border-sky-500">
+
+    </div>
+      <Image 
+        src={props.src} 
+        height={props.height} 
+        width={props.width} 
+        ref={imageRef} 
+        onClick={() => handleClick()} 
+        alt="test" 
+        className=""
+      />
+    </div>
+  )
+}
+
+export default function Home() {
   return (
     <>
       <Head>
@@ -15,36 +72,10 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <p className="text-2xl text-white">
-            {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-          </p>
+          <CustImage src={"/zoom1.webp"} width={864} height={1296} />
+          <button onClick={() => createPoseLandmarker()} className="text-white">
+            click me
+          </button>
         </div>
       </main>
     </>
