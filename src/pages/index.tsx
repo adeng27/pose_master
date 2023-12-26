@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Poses } from "~/components/poses";
 
 //Check if arms are horizontal at shoulder level
@@ -19,6 +19,10 @@ import { Poses } from "~/components/poses";
 
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const photoRef = useRef<HTMLCanvasElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     getVideo();
@@ -28,9 +32,7 @@ export default function Home() {
     navigator.mediaDevices
       .getUserMedia({ video: { width: 378, height: 504} })
       .then(stream => {
-        console.log(videoRef)
-        const video = videoRef.current;
-        if (!video) return;
+        const video = videoRef.current!;
         video.srcObject = stream;
         video.play();
       })
@@ -38,6 +40,39 @@ export default function Home() {
         console.error("error:", err);
       });
   };
+
+  const paintToCanvas = () => {
+    let video = videoRef.current!;
+    let photo = photoRef.current!;
+    let ctx = photo.getContext('2d')!;
+
+    const width = 378;
+    const height = 504;
+    photo.width = width;
+    photo.height = height;
+
+    return setInterval(() => {
+      ctx.drawImage(video, 0, 0, width, height);
+    }, 200);
+  };
+
+  const takePhoto = () => {
+    let photo = photoRef.current!;
+    let strip = stripRef.current!;
+
+    console.warn(strip);
+
+    const data = photo.toDataURL('image/jpeg');
+    setImageUrl(data);
+
+    console.warn(data);
+    const link = document.createElement('a');
+    link.href = data;
+    link.setAttribute('download', 'myWebcam');
+    link.innerHTML = `<img src='${data}' alt='thumbnail'/>`;
+    strip.insertBefore(link, strip.firstChild);
+  };
+
   return (
     <>
       <Head>
@@ -47,9 +82,14 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <Poses />
-          <div>
-            <video ref={videoRef} />
+          {imageUrl !== "" && <Poses imageUrl={imageUrl} />}
+          <div className="flex flex-col gap-8">
+            <button onClick={() => takePhoto()}>Take a photo</button>
+            <video onCanPlay={() => paintToCanvas()} ref={videoRef} />
+            <canvas ref={photoRef} className="hidden" />
+            <div>
+              <div ref={stripRef} />
+            </div>
           </div>
         </div>
       </main>

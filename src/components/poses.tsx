@@ -72,7 +72,7 @@ const CustImage = (props: {id: string, src: string, height: number, width: numbe
     )
   }
 
-export const Poses = () => {
+export const Poses = ( props: {imageUrl: string} ) => {
 
     const dist = (pt1: NormalizedLandmark | undefined, pt2: NormalizedLandmark | undefined) => {
         if (!(pt1 && pt2)) throw new Error("Invalid input in `dist`");
@@ -156,7 +156,8 @@ export const Poses = () => {
             <CustImage id={"target2"} src={"/IMG_2771.jpg"} width={378} height={504} />
           </div>
           <div>
-            <CustImage id={"target3"} src={"/IMG_2773.jpg"} width={378} height={504} />
+            {/* <CustImage id={"target3"} src={"/IMG_2773.jpg"} width={378} height={504} /> */}
+            <CustImage id={"target3"} src={props.imageUrl} width={378} height={504} />
           </div>
           <button onClick={() => createPoseLandmarker()} className="text-white">
             click me
