@@ -1,96 +1,43 @@
-import { DrawingUtils, FilesetResolver, NormalizedLandmark, PoseLandmarker } from "@mediapipe/tasks-vision";
 import Head from "next/head";
-import Image from "next/image";
-import { useRef } from "react";
-
-let poseLandmarker: PoseLandmarker;
-
-const createPoseLandmarker = async () => {
-  const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
-  poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath: "/pose_landmarker_full.task",
-      delegate: "GPU"
-    },
-    runningMode: "IMAGE",
-    numPoses: 2
-  });
-}
-
-const dist = (pt1: NormalizedLandmark | undefined, pt2: NormalizedLandmark | undefined) => {
-  if (!(pt1 && pt2)) return -1;
-  const xdiff = Math.pow(pt1.x - pt2.x, 2);
-  const ydiff = Math.pow(pt1.y - pt2.y, 2);
-  const zdiff = Math.pow(pt1.z - pt2.z, 2);
-
-  return Math.sqrt(xdiff + ydiff + zdiff)
-}
+import { useEffect, useRef } from "react";
+import { Poses } from "~/components/poses";
 
 //Check if arms are horizontal at shoulder level
-const tArms = (pts: number[]) => {
-  const error  = 0.02;
-  if (!(pts[0] && pts[1] && pts[2] && pts[3] && pts[4] && pts[5])) throw new Error("Invalid inputs");
-  //check shoulders
-  if (Math.abs(pts[0] - pts[1]) <= error) {
-    //check elbows to shoulders
-    if (Math.abs(pts[0] - pts[2]) <= error && Math.abs(pts[1] - pts[3]) <= error) {
-      //check wrists to shoulders
-      if (Math.abs(pts[0] - pts[4]) <= error && Math.abs(pts[1] - pts[5]) <= error) return true
-    }
-  }
-  return false;
-}
+// const tArms = (pts: number[]) => {
+//   if (!(pts[0] && pts[1] && pts[2] && pts[3] && pts[4] && pts[5])) throw new Error("Invalid inputs");
+//   //check shoulders
+//   if (Math.abs(pts[0] - pts[1]) <= error) {
+//     //check elbows to shoulders
+//     if (Math.abs(pts[0] - pts[2]) <= error && Math.abs(pts[1] - pts[3]) <= error) {
+//       //check wrists to shoulders
+//       if (Math.abs(pts[0] - pts[4]) <= error && Math.abs(pts[1] - pts[5]) <= error) return true
+//     }
+//   }
+//   return false;
+// }
 
-const CustImage = (props: {id: string, src: string, height: number, width: number}) => {
-  const imageRef = useRef<HTMLImageElement>(null);
-
-  const handleClick = () => {
-    const imageSrc = imageRef.current!;
-    if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
-
-      console.log(result.landmarks[0], result.landmarks[0]?.[11], result.landmarks[0]?.[12])
-
-      const arr = result.landmarks[0]
-      console.log("pythag: ", dist(arr?.[11], arr?.[12]))
-      if (arr?.[11] && arr?.[12] && arr?.[13] && arr?.[14] && arr?.[15] && arr?.[16]) {
-        console.log("is tArms?: ", tArms([arr[11].y, arr[12].y, arr[13].y, arr[14].y, arr[15].y, arr[16].y]))
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.setAttribute("class", "canvas");
-      canvas.setAttribute("width", props.width + "px");
-      canvas.setAttribute("height", props.height + "px");
-
-      const div = document.getElementById(props.id)!
-      div.appendChild(canvas);
-      const canvasCtx = canvas.getContext("2d")!;
-      const drawingUtils = new DrawingUtils(canvasCtx);
-      for (const landmark of result.landmarks) {
-        drawingUtils.drawLandmarks(landmark, {
-          radius: (data) => DrawingUtils.lerp(data.from!.z, -0.15, 0.1, 5, 1)
-        });
-        drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS);
-      }
-    })
-  }
-
-  return (
-    <div className="relative">
-      <div id={props.id} className="absolute border-solid border-2 border-sky-500"></div>
-      <Image 
-        src={props.src} 
-        height={props.height} 
-        width={props.width} 
-        ref={imageRef} 
-        onClick={() => handleClick()} 
-        alt="test" 
-        className=""
-      />
-    </div>
-  )
-}
 
 export default function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    getVideo();
+  }, [videoRef]);
+
+  const getVideo = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: { width: 378, height: 504} })
+      .then(stream => {
+        console.log(videoRef)
+        const video = videoRef.current;
+        if (!video) return;
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch(err => {
+        console.error("error:", err);
+      });
+  };
   return (
     <>
       <Head>
@@ -100,15 +47,10 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+          <Poses />
           <div>
-            <CustImage id={"target1"} src={"/regularPose.jpeg"} width={534} height={850} />
+            <video ref={videoRef} />
           </div>
-          <div>
-            <CustImage id={"target2"} src={"/tpose.jpeg"} width={290} height={360} />
-          </div>
-          <button onClick={() => createPoseLandmarker()} className="text-white">
-            click me
-          </button>
         </div>
       </main>
     </>
