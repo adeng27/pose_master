@@ -2,21 +2,6 @@ import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { Poses } from "~/components/poses";
 
-//Check if arms are horizontal at shoulder level
-// const tArms = (pts: number[]) => {
-//   if (!(pts[0] && pts[1] && pts[2] && pts[3] && pts[4] && pts[5])) throw new Error("Invalid inputs");
-//   //check shoulders
-//   if (Math.abs(pts[0] - pts[1]) <= error) {
-//     //check elbows to shoulders
-//     if (Math.abs(pts[0] - pts[2]) <= error && Math.abs(pts[1] - pts[3]) <= error) {
-//       //check wrists to shoulders
-//       if (Math.abs(pts[0] - pts[4]) <= error && Math.abs(pts[1] - pts[5]) <= error) return true
-//     }
-//   }
-//   return false;
-// }
-
-
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const photoRef = useRef<HTMLCanvasElement>(null);
@@ -51,27 +36,20 @@ export default function Home() {
     photo.width = width;
     photo.height = height;
 
-    return setInterval(() => {
-      ctx.drawImage(video, 0, 0, width, height);
-    }, 200);
+    ctx.drawImage(video, 0, 0, width, height);
+    return true;
   };
 
   const takePhoto = () => {
     let photo = photoRef.current!;
-    let strip = stripRef.current!;
-
-    console.warn(strip);
 
     const data = photo.toDataURL('image/jpeg');
     setImageUrl(data);
 
-    console.warn(data);
-    const link = document.createElement('a');
-    link.href = data;
-    link.setAttribute('download', 'myWebcam');
-    link.innerHTML = `<img src='${data}' alt='thumbnail'/>`;
-    strip.insertBefore(link, strip.firstChild);
+    // console.warn(data);
   };
+
+  const [countdown, setCountdown] = useState(3);
 
   return (
     <>
@@ -84,12 +62,21 @@ export default function Home() {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           {imageUrl !== "" && <Poses imageUrl={imageUrl} />}
           <div className="flex flex-col gap-8">
-            <button onClick={() => takePhoto()}>Take a photo</button>
-            <video onCanPlay={() => paintToCanvas()} ref={videoRef} />
-            <canvas ref={photoRef} className="hidden" />
-            <div>
-              <div ref={stripRef} />
+            <button onClick={() => {
+              setTimeout(() => setCountdown(2), 1000)
+              setTimeout(() => setCountdown(1), 2000)
+              setTimeout(async () => {
+                setCountdown(0)
+                if (await paintToCanvas()) {
+                  takePhoto();
+                }
+              }, 5000)
+            }}>Take a photo</button>
+            <video ref={videoRef} />
+            <div className="flex justify-center text-white">
+              { countdown }
             </div>
+            <canvas ref={photoRef} className="hidden" />
           </div>
         </div>
       </main>

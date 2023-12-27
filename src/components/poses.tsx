@@ -1,4 +1,4 @@
-import { DrawingUtils, FilesetResolver, NormalizedLandmark, PoseLandmarker } from "@mediapipe/tasks-vision";
+import { DrawingUtils, FilesetResolver, NormalizedLandmark, PoseLandmarker, BoundingBox } from "@mediapipe/tasks-vision";
 import Image from "next/image";
 import { useRef } from "react";
 
@@ -18,31 +18,104 @@ const createPoseLandmarker = async () => {
 
 let test1: NormalizedLandmark[] | undefined = undefined;
 let test2: NormalizedLandmark[] | undefined = undefined;
+let test3: NormalizedLandmark[] | undefined = undefined;
 const CustImage = (props: {id: string, src: string, height: number, width: number}) => {
     const imageRef = useRef<HTMLImageElement>(null);
   
     const handleClick = () => {
       const imageSrc = imageRef.current!;
       if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
-  
-        console.log(result.landmarks[0], result.landmarks[0]?.[11], result.landmarks[0]?.[12])
-  
-        const arr = result.landmarks[0]
+
+        test3 = result.landmarks[0]
+
+        let maxX = -1;
+        let maxY = -1;
+        let minX = 2;
+        let minY = 2;
+        if (test3) {
+          for (const elem of test3) {
+            if (elem.x > maxX) maxX = elem.x
+            if (elem.x < minX) minX = elem.x
+            if (elem.y > maxY) maxY = elem.y
+            if (elem.y < minY) minY = elem.y
+          }
+        }
+
+        const boxWidth = (maxX - minX) * props.width;
+        const boxHeight = (maxY - minY) * props.height;
+
+        //Fit to bounding box
+        if (test3) {
+          for (const elem of test3) {
+            elem.x -= minX;
+            elem.y -= minY;
+
+            elem.x *= props.width;
+            elem.y *= props.height;
+
+            elem.x /= boxWidth;
+            elem.y /= boxHeight;
+          }
+        }
+
+        const indArr = [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26]
+        let temp: NormalizedLandmark[] | undefined = []
+        if (test3) for (let i = 0; i < test3.length; i++) {
+          if (indArr.includes(i)) {
+            let elem = test3[i]
+            if (elem) temp.push(elem)
+          }
+        }
+
+        test3 = temp;
+
+        const arr: number[] = [];
+        for (const elem of test3) {
+          arr.push(elem.x)
+          arr.push(elem.y)
+        }
+
+        let sumOfSquares = arr.reduce((acc, val) => acc + val * val, 0);
+        const norm = Math.sqrt(sumOfSquares);
+        const normalizedArr = arr.map(val => val / norm);
+
+        for (const elem of test3) {
+          let num = normalizedArr.shift()
+          if (num) elem.x = num;
+          num = normalizedArr.shift()
+          if (num) elem.y = num;
+        }
   
         const canvas = document.createElement("canvas");
         canvas.setAttribute("class", "canvas");
-        canvas.setAttribute("width", props.width + "px");
-        canvas.setAttribute("height", props.height + "px");
-  
+        canvas.setAttribute("width", boxWidth + "px");
+        canvas.setAttribute("height", boxHeight + "px");
+        
         const div = document.getElementById(props.id)!
         div.appendChild(canvas);
         const canvasCtx = canvas.getContext("2d")!;
         const drawingUtils = new DrawingUtils(canvasCtx);
-        for (const landmark of result.landmarks) {
-          drawingUtils.drawLandmarks(landmark, {
-            radius: (data) => DrawingUtils.lerp(data.from!.z, -0.15, 0.1, 5, 1)
-          });
-          drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS);
+        // for (const landmark of result.landmarks) {
+        //   drawingUtils.drawLandmarks(landmark, {
+        //     radius: (data) => DrawingUtils.lerp(data.from!.z, -0.15, 0.1, 5, 1)
+        //   });
+        //   drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS);
+        // }
+
+        if (test3) {
+          console.log(test3)
+          // const box: BoundingBox = {angle: 0, originX: minX * props.width, originY: minY * props.height, 
+          //   width: (maxX - minX) * props.width, height: (maxY - minY) * props.height}
+          const box: BoundingBox = {
+            angle: 0,
+            originX: 0,
+            originY: 0,
+            width: boxWidth,
+            height: boxHeight
+          }
+          drawingUtils.drawBoundingBox(box, { color: "black", lineWidth: 8 })
+          drawingUtils.drawLandmarks(test3);
+          // drawingUtils.drawConnectors(test3, PoseLandmarker.POSE_CONNECTIONS);
         }
       })
     }
@@ -64,9 +137,9 @@ const CustImage = (props: {id: string, src: string, height: number, width: numbe
             arr = result.landmarks[0]
           })
           if (!test1) {
-            test1 = arr
+            test1 = arr;
           }
-          test2 = arr
+          else test2 = arr;
         }}>STORE POSE</button>
       </div>
     )
@@ -96,7 +169,7 @@ export const Poses = ( props: {imageUrl: string} ) => {
         target.z = origin.z + zdiff;
       }
       
-      const error = 0.025
+      const error = 0.01
       const withinBounds = (actual: NormalizedLandmark | undefined, target: NormalizedLandmark) => {
         if (!actual) throw new Error("Invalid input in `withinBounds`")
         if (target.x === -1) throw new Error("`target` object is unchanged")
@@ -114,35 +187,54 @@ export const Poses = ( props: {imageUrl: string} ) => {
       //6, 7 => left & right hips
       //8, 9 => left & right knees
       const comparePoses = (pose1: NormalizedLandmark[], pose2: NormalizedLandmark[]) => {
+        console.log("Inside comparePoses: ", pose1, pose2)
         const upArmDiff = dist(pose2[0], pose2[2]) / dist(pose1[0], pose1[2]);
       
         //Check left shoulder to left elbow
         const target: NormalizedLandmark = { x: -1, y: -1, z: -1 };
         predictLocation(upArmDiff, pose1[0], pose1[2], pose2[0], target);
-        if (!withinBounds(pose2[2], target)) return false;
+        if (!withinBounds(pose2[2], target)) {
+          console.log("FAILED AT LEFT SHOULDER TO ELBOW")
+          return false;
+        }
       
         //Check right shoulder to right elbow
         target.x = -1;
         predictLocation(upArmDiff, pose1[1], pose1[3], pose2[1], target);
-        if (!withinBounds(pose2[3], target)) return false;
+        if (!withinBounds(pose2[3], target)) {
+          console.log("FAILED AT RIGHT SHOULDER TO ELBOW")
+          return false;
+        }
       
         //Check forearms
         const forearmDiff = dist(pose2[2], pose2[4]) / dist(pose1[2], pose1[4]);
         target.x = -1;
         predictLocation(forearmDiff, pose1[2], pose1[4], pose2[2], target);
-        if (!withinBounds(pose2[4], target)) return false;
+        if (!withinBounds(pose2[4], target)) {
+          console.log("FAILED AT LEFT FOREARM")
+          return false;
+        }
         target.x = -1;
         predictLocation(forearmDiff, pose1[3], pose1[5], pose2[3], target);
-        if (!withinBounds(pose2[5], target)) return false;
+        if (!withinBounds(pose2[5], target)) {
+          console.log("FAILED AT RIGHT FOREARM")
+          return false;
+        }
       
         //Check thighs
         const thighDiff = dist(pose2[6], pose2[8]) / dist(pose1[6], pose1[8]);
         target.x = -1;
         predictLocation(thighDiff, pose1[6], pose1[8], pose2[6], target);
-        if (!withinBounds(pose2[8], target)) return false;
+        if (!withinBounds(pose2[8], target)) {
+          console.log("FAILED AT LEFT THIGH")
+          return false;
+        }
         target.x = -1;
         predictLocation(thighDiff, pose1[7], pose1[9], pose2[7], target);
-        if (!withinBounds(pose2[9], target)) return false;
+        if (!withinBounds(pose2[9], target)) {
+          console.log("FAILED AT RIGHT THIGH")
+          return false;
+        }
       
         return true;
       }
