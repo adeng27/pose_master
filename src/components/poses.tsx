@@ -34,11 +34,11 @@ export const Poses = ( props: {imageUrl: string} ) => {
             <CustImage id={"target1"} src={"/IMG_2770.jpg"} width={378} height={504} normVec={attemptVec} />
           </div> */}
           <div>
-            <CustImage id={"target2"} src={"/IMG_2771.jpg"} width={378} height={504} normVec={attemptVec} />
+            <CustImage id={"target2"} src={"/IMG_2773.jpg"} width={378} height={504} normVec={attemptVec} />
           </div>
-          {/* <div>
-            <CustImage id={"target3"} src={props.imageUrl} width={378} height={504} />
-          </div> */}
+          <div>
+            <CustImage id={"target3"} src={props.imageUrl} width={378} height={504} normVec={attemptVec} />
+          </div>
           <button 
             onClick={() => {
               console.log(attemptVec);
