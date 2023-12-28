@@ -141,6 +141,7 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
   
     return (
       <div className="relative">
+        <button onClick={() => handleClick()}>Click</button>
         <div id={props.id} className="absolute border-solid border-2 border-sky-500" />
         <Image 
           src={props.src} 
@@ -149,6 +150,7 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
           ref={imageRef} 
           onClick={() => handleClick()} 
           alt="test" 
+          className="hidden"
         />
       </div>
     )

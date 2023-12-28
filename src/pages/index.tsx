@@ -7,7 +7,7 @@ export default function Home() {
   //To add a pose
   // const {mutate: addPose} = api.pose.addPose.useMutation();
 
-  const {data: poseData} = api.pose.getPose.useQuery("T-Pose");
+  // const {data: poseData} = api.pose.getPose.useQuery("T-Pose");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const photoRef = useRef<HTMLCanvasElement>(null);
