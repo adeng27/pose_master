@@ -5,7 +5,6 @@ import { Poses } from "~/components/poses";
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const photoRef = useRef<HTMLCanvasElement>(null);
-  const stripRef = useRef<HTMLDivElement>(null);
 
   const [imageUrl, setImageUrl] = useState("");
 
@@ -16,10 +15,10 @@ export default function Home() {
   const getVideo = () => {
     navigator.mediaDevices
       .getUserMedia({ video: { width: 378, height: 504} })
-      .then(stream => {
+      .then(async stream => {
         const video = videoRef.current!;
         video.srcObject = stream;
-        video.play();
+        await video.play();
       })
       .catch(err => {
         console.error("error:", err);
@@ -27,9 +26,9 @@ export default function Home() {
   };
 
   const paintToCanvas = () => {
-    let video = videoRef.current!;
-    let photo = photoRef.current!;
-    let ctx = photo.getContext('2d')!;
+    const video = videoRef.current!;
+    const photo = photoRef.current!;
+    const ctx = photo.getContext('2d')!;
 
     const width = 378;
     const height = 504;
@@ -41,7 +40,7 @@ export default function Home() {
   };
 
   const takePhoto = () => {
-    let photo = photoRef.current!;
+    const photo = photoRef.current!;
 
     const data = photo.toDataURL('image/jpeg');
     setImageUrl(data);
@@ -65,9 +64,9 @@ export default function Home() {
             <button onClick={() => {
               setTimeout(() => setCountdown(2), 1000)
               setTimeout(() => setCountdown(1), 2000)
-              setTimeout(async () => {
+              setTimeout(() => {
                 setCountdown(0)
-                if (await paintToCanvas()) {
+                if (paintToCanvas()) {
                   takePhoto();
                 }
               }, 5000)

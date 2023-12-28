@@ -34,7 +34,7 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
     }
 
     const normalizeLandmarks = (landmarks: NormalizedLandmark[], landmarksVector: number[]) => {
-      let sumOfSquares = landmarksVector.reduce((acc, val) => acc + val * val, 0);
+      const sumOfSquares = landmarksVector.reduce((acc, val) => acc + val * val, 0);
       const norm = Math.sqrt(sumOfSquares);
       const normalizedArr = landmarksVector.map(val => val / norm);
       

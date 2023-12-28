@@ -8,8 +8,8 @@ export const Poses = ( props: {imageUrl: string} ) => {
       //find dot product
       let result = 0;
       for (let i = 0; i < vec1.length; i++) {
-        let val1 = vec1[i];
-        let val2 = vec2[i];
+        const val1 = vec1[i];
+        const val2 = vec2[i];
         if (val1 && val2) result += val1 * val2;
       }
 
