@@ -2,7 +2,7 @@ import { BoundingBox, DrawingUtils, FilesetResolver, NormalizedLandmark, PoseLan
 import Image from "next/image";
 import { useRef } from "react";
 
-export const CustImage = (props: { id: string, src: string, height: number, width: number}) => {
+export const CustImage = (props: { id: string, src: string, height: number, width: number, normVec: number[]}) => {
     const imageRef = useRef<HTMLImageElement>(null);
     let poseLandmarker: PoseLandmarker;
 
@@ -37,6 +37,10 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
       let sumOfSquares = landmarksVector.reduce((acc, val) => acc + val * val, 0);
       const norm = Math.sqrt(sumOfSquares);
       const normalizedArr = landmarksVector.map(val => val / norm);
+      
+      for (const elem of normalizedArr) {
+        props.normVec.push(elem)
+      }
 
       for (const elem of landmarks) {
         let num = normalizedArr.shift()
@@ -100,7 +104,6 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
 
           normalizeLandmarks(landmarks, landmarksVector);
 
-          //Purely for graphing
           landmarks = prepForGraphing(landmarks)
         }
   
@@ -138,7 +141,7 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
   
     return (
       <div className="relative">
-        <div id={props.id} className="absolute border-solid border-2 border-sky-500"></div>
+        <div id={props.id} className="absolute border-solid border-2 border-sky-500" />
         <Image 
           src={props.src} 
           height={props.height} 
