@@ -1,8 +1,14 @@
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { Poses } from "~/components/poses";
+import { api } from "~/utils/api";
 
 export default function Home() {
+  //To add a pose
+  // const {mutate: addPose} = api.pose.addPose.useMutation();
+
+  const {data: poseData} = api.pose.getPose.useQuery("T-Pose");
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const photoRef = useRef<HTMLCanvasElement>(null);
 
@@ -50,6 +56,11 @@ export default function Home() {
 
   const [countdown, setCountdown] = useState(3);
 
+  //To add a pose
+  // const addOnePose = (nameParam: string, landmarksParam: number[], difficultyParam: number) => {
+  //   addPose({name: nameParam, landmarks: landmarksParam, difficulty: difficultyParam});
+  // }
+
   return (
     <>
       <Head>
@@ -76,6 +87,16 @@ export default function Home() {
               { countdown }
             </div>
             <canvas ref={photoRef} className="hidden" />
+            {/* <button onClick={() => {addOnePose(
+              "T-Pose",
+              [0.18524380649642752, 0.012459343124820893, 0.22759957713004525, 0.043303350899495545, 0.1347904275079755, 0.04467234417766422, 0.28841686761534374, 0.03862719640933583, 0.08551147949044349, 0.04499768535910111, 0.3571568775129372, 0.0237200789929649, 0.021825018133979485, 0.04383588803471717, 0.2057290197128731, 0.19727270292718296, 0.16050994402966665, 0.19777722313501536, 0.20149839014580787, 0.2768812072939942, 0.16452136678886037, 0.274693171470825, 0.19901230718507606, 0.33935149855901625, 0.17690259313497814, 0.33938947227137],
+              1
+              )}}>Add Pose</button> */}
+              <button onClick={() => {
+                console.log(poseData?.name, poseData?.landmarks, poseData?.difficulty)
+              }}>
+                Get pose data
+              </button>
           </div>
         </div>
       </main>
