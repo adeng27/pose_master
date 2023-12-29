@@ -14,7 +14,7 @@ model Pose {
   id         String  @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   landmarks  Float[]
-  difficulty Int
+  poseNum    Int
 
   @@map("poses")
 }

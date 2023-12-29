@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+const NUMBER_OF_POSES = 1;
+
 //Vectors should have the same length
 //Returns scalar between -1 & 1
 const cosineSimilarity = (vec1: number[], vec2: number[]) => {
@@ -30,9 +32,11 @@ const isCorrect = (vec1: number[], vec2: number[]) => {
     return false
 }
 
+/*************************************************************/
+
 export const poseRouter = createTRPCRouter({
   addPose: publicProcedure
-    .input(z.object({ name: z.string(), landmarks: z.array(z.number()), difficulty: z.number() }))
+    .input(z.object({ name: z.string(), landmarks: z.array(z.number()), poseNum: z.number() }))
     .mutation(async ({ctx, input}) => {
         const existingPose = await ctx.db.pose.findFirst({
             where: {
@@ -45,7 +49,7 @@ export const poseRouter = createTRPCRouter({
             data: {
                 name: input.name,
                 landmarks: input.landmarks,
-                difficulty: input.difficulty,
+                poseNum: input.poseNum,
             }
         })
   }),
@@ -70,5 +74,10 @@ export const poseRouter = createTRPCRouter({
 
     console.log(input.landmarks, findEuclideanDist(existingPose.landmarks, input.landmarks))
     return isCorrect(existingPose.landmarks, input.landmarks);
+  }),
+
+  getPoseList: publicProcedure.input(z.number()).query(async ({ctx, input}) => {
+    const result: { name: string, landmarks: number[] }[] = [];
+
   })
 });

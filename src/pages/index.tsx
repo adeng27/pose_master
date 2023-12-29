@@ -1,16 +1,17 @@
 import Head from "next/head";
 import { Game } from "~/components/game";
+import { api } from "~/utils/api";
 
 export default function Home() {
   //To add a pose
-  // const {mutate: addPose} = api.pose.addPose.useMutation();
+  const {mutate: addPose} = api.pose.addPose.useMutation();
 
   // const {data: poseData} = api.pose.getPose.useQuery("T-Pose");
 
   //To add a pose
-  // const addOnePose = (nameParam: string, landmarksParam: number[], difficultyParam: number) => {
-  //   addPose({name: nameParam, landmarks: landmarksParam, difficulty: difficultyParam});
-  // }
+  const addOnePose = (nameParam: string, landmarksParam: number[], poseNumParam: number) => {
+    addPose({name: nameParam, landmarks: landmarksParam, poseNum: poseNumParam});
+  }
 
   return (
     <>
@@ -25,6 +26,21 @@ export default function Home() {
           <div className="">
             <Game />
           </div>
+          {/* <button onClick={() => {addOnePose(
+              "Left Arm Up",
+[0.15423954884772823, 0.08285932720181531, 0.25644785274393395, 0.1001749767350889, 0.05166365330710763, 0.11299621085612142, 0.3257026628798986, 0.06107964931827934, 0.021774999534098626, 0.15911562452263356, 0.32225767767890506, 0.014123573145198536, 0.011216563180339685, 0.20028900577198971, 0.23359885963070237, 0.1939541480773435, 0.11122829862552387, 0.19495150560664593, 0.23836152734640897, 0.25272811831700476, 0.11886658423441034, 0.2533580307716411, 0.23014482497321517, 0.3042349752408257, 0.14221533868558306, 0.30147690385906245],
+              5
+              )}}>Add Pose</button>
+              <button onClick={async () => {
+                const poseLandmarker = await createPoseLandmarker();
+                if (imageRef.current) {
+                  const printThis = await getPoseData(imageRef.current, poseLandmarker, 378, 504)
+                  console.log(printThis)
+                }
+              }}>
+                Get Pose Data
+              </button>
+              <Image src="/leftArmUpPose.jpg" width={378} height={504} alt="" ref={imageRef} /> */}
         </div>
       </main>
     </>
