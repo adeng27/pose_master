@@ -1,22 +1,34 @@
+import { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
+import { createPoseLandmarker, getPoseData } from "./poseLandmarker";
 
 export const Game = () => {
+    const IMAGE_WIDTH = 414;
+    const IMAGE_HEIGHT = 720;
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const photoRef = useRef<HTMLCanvasElement>(null);
     const currentTimer = useRef<ReturnType<typeof setTimeout>>();
+    const imageRef = useRef<HTMLImageElement>(null);
 
     const [countdown, setCountdown] = useState(5);
     const [score, setScore] = useState(0);
     const [cameraFlash, setCameraFlash] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
 
+    // const propVec: number[] = [];
+    // const argVecInit: number[] = [];
+    // const [argVec, setArgVec] = useState(argVecInit);
+
     useEffect(() => {
         getVideo();
       }, [videoRef]);
 
+    let poseLandmarker: PoseLandmarker;
+
     const getVideo = () => {
         navigator.mediaDevices
-          .getUserMedia({ video: { width: 414, height: 720} })
+          .getUserMedia({ video: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT} })
           .then(async stream => {
             const video = videoRef.current!;
             video.srcObject = stream;
@@ -32,8 +44,8 @@ export const Game = () => {
         const photo = photoRef.current!;
         const ctx = photo.getContext('2d')!;
 
-        const width = 414;
-        const height = 720;
+        const width = IMAGE_WIDTH;
+        const height = IMAGE_HEIGHT;
         photo.width = width;
         photo.height = height;
 
@@ -72,13 +84,20 @@ export const Game = () => {
 
     const startGame = () => {
         startCountdown();
+        setTimeout(async () => {
+            if (imageRef.current) {
+                const result = await getPoseData(imageRef.current, poseLandmarker, IMAGE_WIDTH, IMAGE_HEIGHT)
+                console.log(result)
+            }
+        }, 6000)
     }
 
     const StartButton = () => {
         return (
             <button 
                 type="button" 
-                onClick={() => {
+                onClick={async () => {
+                    poseLandmarker = await createPoseLandmarker();
                     startGame();
                 }}
                 className="absolute bottom-10 left-[184px] text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500"
@@ -104,6 +123,7 @@ export const Game = () => {
                     <img 
                         src={imageUrl} 
                         alt="" 
+                        ref={imageRef}
                         className="rounded-3xl"
                     /> 
                 }

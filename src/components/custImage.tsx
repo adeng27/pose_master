@@ -150,7 +150,6 @@ export const CustImage = (props: { id: string, src: string, height: number, widt
           ref={imageRef} 
           onClick={() => handleClick()} 
           alt="test" 
-          className="hidden"
         />
       </div>
     )
