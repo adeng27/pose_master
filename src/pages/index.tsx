@@ -1,8 +1,5 @@
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
 import { Game } from "~/components/game";
-import { Poses } from "~/components/poses";
-import { api } from "~/utils/api";
 
 export default function Home() {
   //To add a pose

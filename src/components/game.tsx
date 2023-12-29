@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { CustImage } from "./custImage";
-import Image from "next/image";
-import { Poses } from "./poses";
 
 export const Game = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const photoRef = useRef<HTMLCanvasElement>(null);
-    const currentTimer = useRef<any>();
+    const currentTimer = useRef<ReturnType<typeof setTimeout>>();
 
     const [countdown, setCountdown] = useState(5);
     const [score, setScore] = useState(0);
