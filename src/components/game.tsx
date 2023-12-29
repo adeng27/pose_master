@@ -14,7 +14,8 @@ export const Game = () => {
     const gameTimer = useRef<ReturnType<typeof setTimeout>>();
     const imageRef = useRef<HTMLImageElement>(null);
 
-    const [gameStarted, setGameStarted] = useState(false);
+    //gameStates: 0 -> beforeGame, 1 -> prepForGameStart, 2 -> gameStart, 3 -> seeing photo
+    const [gameState, setGameState] = useState([true, false, false, false]);
     const [roundNum, setRoundNum] = useState(0)
     const [countdown, setCountdown] = useState(5);
     const [cameraFlash, setCameraFlash] = useState(false);
@@ -68,19 +69,27 @@ export const Game = () => {
         // console.warn(data);
     };
 
-    const startCountdown = () => {
+    const doACountdown = (time: number) => {
+        setCountdown(time);
         roundTimer.current = setInterval(() => {
             setCountdown((prev) => prev - 1);
         }, 1000);
-
         setTimeout(() => {
             clearInterval(roundTimer.current);
+        }, time * 1000)
+    }
+
+    const startCountdown = () => {
+        doACountdown(5);
+
+        setTimeout(() => {
             setCountdown(5)
             const elem = document.getElementById("webcam");
             if (elem) elem.setAttribute("style", "display:none")
             setCameraFlash(true)
             setTimeout(() => {
                 setCameraFlash(false);
+                setGameState([false, false, false, true])
                 if (paintToCanvas()) takePhoto();
                 // if (elem) elem.setAttribute("style", "display:auto") //Show custImage now?
                 // getVideo(); //Show custImage now?
@@ -90,6 +99,7 @@ export const Game = () => {
 
     const startGame = () => {
         gameTimer.current = setInterval(() => {
+            setGameState([false, false, true, false]);
             setImageUrl("");
             const elem = document.getElementById("webcam");
             if (elem) elem.setAttribute("style", "display:auto") 
@@ -122,8 +132,9 @@ export const Game = () => {
             <button 
                 type="button" 
                 onClick={async () => {
+                    setGameState([false, true, false, false]);
+                    doACountdown(10);
                     poseLandmarker = await createPoseLandmarker();
-                    setGameStarted(true);
                     startGame();
                 }}
                 className="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500"
@@ -138,7 +149,7 @@ export const Game = () => {
 
     return (
         <div className="h-screen flex flex-col justify-center items-center">
-            <div className="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
+            <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
                 <div className="h-[32px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
                 <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
                 <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
@@ -159,15 +170,21 @@ export const Game = () => {
                     <div className="absolute top-2 w-full [text-shadow:_2px_2px_2px_black]">
                         <div className="flex flex-col justify-center items-center gap-2 w-full">
                             <h1 className="text-2xl">Round {roundNum}</h1>
-                            <h1 className="text-5xl">{countdown}</h1>
+                            <h1 className="text-5xl">{gameState[0] ? "Posers!" :  countdown}</h1>
+                        </div>
+                    </div>
+                    <div className="absolute top-1/2 w-full [text-shadow:_2px_2px_2px_black]">
+                        <div className="flex justify-center items-center w-full">
+                            <h1>
+                                {gameState[1] && <span className="text-3xl">Get ready to pose!</span>}
+                                {gameState[2] && <span className="text-5xl font-extrabold">T-Pose</span>}
+                            </h1>
                         </div>
                     </div>
                     <div className="absolute bottom-10 w-full">
                         <div className="flex justify-center items-center w-full">
-                            { gameStarted ? 
-                                <h1 className="text-2xl [text-shadow:_2px_2px_2px_black]">
-                                    Score: <ScoreView name={"T-Pose"} landmarks={argVec} scoreVec={scoreVec} />
-                                </h1> 
+                            { !gameState[0] ? 
+                                <ScoreView name={"T-Pose"} landmarks={argVec} scoreVec={scoreVec} />
                                 :
                                 <StartButton />
                             }
@@ -187,14 +204,16 @@ const ScoreView = (props: {name: string, landmarks: number[], scoreVec: number[]
 
     useEffect(() => {
         if (typeof result !== "undefined" && props.landmarks.length > 0) {
-            console.log("Landmarks",props.landmarks, result, score)
+            const elem = document.getElementById("score")
             if (result) {
                 props.scoreVec.push(1)
                 setScore((prev) => prev + 1);
+                if (elem) elem.setAttribute("style", "color: rgb(74 222 128)")
             }
             else {
                 props.scoreVec.push(-1)
                 setScore((prev) => prev - 1);
+                if (elem) elem.setAttribute("style", "color: rgb(220 38 38)")
             }
 
             const len = props.landmarks.length;
@@ -205,6 +224,8 @@ const ScoreView = (props: {name: string, landmarks: number[], scoreVec: number[]
     }, [isLoading])
 
     return (
-        <span>{score}</span>
+        <div id="score" className="text-5xl [text-shadow:_2px_2px_2px_black]">
+            Score: {score}
+        </div>
     )
 }
