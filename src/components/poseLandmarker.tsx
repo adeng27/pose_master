@@ -62,7 +62,7 @@ export const getPoseData = async (imageSrc: HTMLImageElement, poseLandmarker: Po
     const returnResult: number[] = [];
     if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
 
-      let landmarks = result.landmarks[0]
+      const landmarks = result.landmarks[0]
 
       let maxX = -1;
       let maxY = -1;

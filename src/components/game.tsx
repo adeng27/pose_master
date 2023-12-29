@@ -1,6 +1,7 @@
 import { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
 import { createPoseLandmarker, getPoseData } from "./poseLandmarker";
+import { api } from "~/utils/api";
 
 export const Game = () => {
     const IMAGE_WIDTH = 414;
@@ -84,10 +85,15 @@ export const Game = () => {
 
     const startGame = () => {
         startCountdown();
-        setTimeout(async () => {
+        setTimeout(() => {
             if (imageRef.current) {
-                const result = await getPoseData(imageRef.current, poseLandmarker, IMAGE_WIDTH, IMAGE_HEIGHT)
-                console.log(result)
+                getPoseData(imageRef.current, poseLandmarker, IMAGE_WIDTH, IMAGE_HEIGHT)
+                    .then(result => {
+                        console.log(result);
+                    })
+                    .catch(error => {
+                        console.error("Error fetching pose data:", error);
+                    });
             }
         }, 6000)
     }
@@ -136,5 +142,14 @@ export const Game = () => {
                 <canvas ref={photoRef} className="hidden" />
             </div>
         </div>
+    )
+}
+
+const ScoreView = (props: {name: string, landmarks: number[]}) => {
+    const {data: result, isLoading} = api.pose.isCorrectPose.useQuery({name: props.name, landmarks: props.landmarks});
+    const [score, setScore] = useState(0)
+
+    return (
+        <h1>{score}</h1>
     )
 }
