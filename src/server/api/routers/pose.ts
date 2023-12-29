@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-const NUMBER_OF_POSES = 1;
+const NUMBER_OF_POSES = 6;
 
 //Vectors should have the same length
 //Returns scalar between -1 & 1
@@ -65,6 +65,7 @@ export const poseRouter = createTRPCRouter({
   isCorrectPose: publicProcedure
   .input(z.object({ name: z.string(), landmarks: z.array(z.number()) }))
   .query(async ({ctx, input}) => {
+    if (input.landmarks.length === 0) return null;
     const existingPose = await ctx.db.pose.findFirst({
         where: {
             name: input.name
@@ -78,6 +79,23 @@ export const poseRouter = createTRPCRouter({
 
   getPoseList: publicProcedure.input(z.number()).query(async ({ctx, input}) => {
     const result: { name: string, landmarks: number[] }[] = [];
+    const temp = [0, 1, 2, 3, 4, 5]
+    for (let i = 0; i < input; i++) {
+        const ind = Math.floor(Math.random() * temp.length)
+        const poseNumber = temp[ind];
+        temp.splice(ind, 1);
 
+        const randPose = await ctx.db.pose.findFirstOrThrow({
+            where: {
+                poseNum: poseNumber,
+            },
+            select: {
+                name: true,
+                landmarks: true,
+            },
+        });
+        result.push(randPose);
+    }
+    return result;
   })
 });

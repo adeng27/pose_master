@@ -203,7 +203,7 @@ const ScoreView = (props: {name: string, landmarks: number[], scoreVec: number[]
     const [score, setScore] = useState(initScore)
 
     useEffect(() => {
-        if (typeof result !== "undefined" && props.landmarks.length > 0) {
+        if (typeof result !== "undefined" && typeof result !== null && props.landmarks.length > 0) {
             const elem = document.getElementById("score")
             if (result) {
                 props.scoreVec.push(1)
