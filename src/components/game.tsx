@@ -172,7 +172,13 @@ export const Game = (props: { rounds: number }) => {
                                 {!gameState[4] && <span>Round {roundNum}/{props.rounds}</span>}
                                 {!!gameState[4] && <span>Game Over!</span>}
                             </h1>
-                            <h1 className="text-5xl">{gameState[0] || gameState[4] ? "Posers!" :  (gameState[3]) ? "" : countdown}</h1>
+                            <h1 className="text-5xl">
+                                {gameState[0] && "Posers!"}
+                                {gameState[1] && countdown}
+                                {gameState[2] && countdown}
+                                {gameState[4] && "Posers!"}
+
+                            </h1>
                         </div>
                     </div>
                     <div className="absolute top-1/2 w-full [text-shadow:_2px_2px_2px_black]">

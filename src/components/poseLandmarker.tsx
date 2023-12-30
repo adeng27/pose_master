@@ -63,7 +63,7 @@ export const getPoseData = async (imageSrc: HTMLImageElement, poseLandmarker: Po
     if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
 
       const landmarks = result.landmarks[0]
-      //throw error here if landmarks is undefined
+      if (landmarks?.length === 0) throw new Error("No person detected!")
 
       let maxX = -1;
       let maxY = -1;
