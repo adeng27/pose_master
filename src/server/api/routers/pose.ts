@@ -3,8 +3,6 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-const NUMBER_OF_POSES = 6;
-
 //Vectors should have the same length
 //Returns scalar between -1 & 1
 const cosineSimilarity = (vec1: number[], vec2: number[]) => {

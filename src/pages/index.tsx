@@ -2,7 +2,6 @@ import Head from "next/head";
 import Image from "next/image";
 import { useState } from "react";
 import { Game } from "~/components/game";
-import { Poses } from "~/components/poses";
 
 export default function Home() {
   const [playGame, setPlayGame] = useState(false)
