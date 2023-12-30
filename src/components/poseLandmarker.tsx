@@ -1,4 +1,5 @@
 import { FilesetResolver, NormalizedLandmark, PoseLandmarker } from "@mediapipe/tasks-vision";
+import toast from "react-hot-toast";
 
 export const createPoseLandmarker = async () => {
     const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
@@ -63,7 +64,7 @@ export const getPoseData = async (imageSrc: HTMLImageElement, poseLandmarker: Po
     if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
 
       const landmarks = result.landmarks[0]
-      if (landmarks?.length === 0) throw new Error("No person detected!")
+      if (landmarks?.length === 0) toast.error("Pose not detected!")
 
       let maxX = -1;
       let maxY = -1;
