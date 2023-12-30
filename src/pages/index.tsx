@@ -1,10 +1,9 @@
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import { Game } from "~/components/game";
 
 export default function Home() {
-  const [playGame, setPlayGame] = useState(false)
   //To add a pose
   // const {mutate: addPose} = api.pose.addPose.useMutation();
 
@@ -16,12 +15,10 @@ export default function Home() {
   const PlayGameButton = () => {
     return (
       <div className="flex justify-center w-full">
-        <button 
-          onClick={() => setPlayGame(true)}
+        <Link 
+          href="/play"
           className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-        >
-          Start Posing!
-        </button>
+        >Start posing!</Link>
       </div>
     )
   }
@@ -36,7 +33,7 @@ export default function Home() {
       <main className="">
         <div className="">
           <div className="">
-            {!playGame ? <div className="h-screen flex flex-col justify-center items-center">
+            <div className="h-screen flex flex-col justify-center items-center">
                 <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
                     <div className="absolute w-full top-10">
                       <div className="flex flex-col justify-center items-center gap-2">
@@ -54,8 +51,6 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-            :
-            <Game />}
           </div>
         </div>
       </main>

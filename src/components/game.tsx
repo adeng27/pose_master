@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import { createPoseLandmarker, getPoseData, isCorrect } from "./poseLandmarker";
 import { api } from "~/utils/api";
 import Image from "next/image";
+import Link from "next/link";
 
-export const Game = () => {
-    const { data: poseList } = api.pose.getPoseList.useQuery(6)
+export const Game = (props: { rounds: number }) => {
+    const { data: poseList } = api.pose.getPoseList.useQuery(props.rounds)
 
     const IMAGE_WIDTH = 414;
     const IMAGE_HEIGHT = 720;
@@ -16,16 +17,13 @@ export const Game = () => {
     const gameTimer = useRef<ReturnType<typeof setTimeout>>();
     const imageRef = useRef<HTMLImageElement>(null);
 
-    //gameStates: 0 -> beforeGame, 1 -> prepForGameStart, 2 -> gameStart, 3 -> seeing photo
-    const [gameState, setGameState] = useState([true, false, false, false]);
+    //gameStates: 0 -> beforeGame, 1 -> prepForGameStart, 2 -> gameStart, 3 -> seeing photo, 4 -> game over
+    const [gameState, setGameState] = useState([true, false, false, false, false]);
     const [roundNum, setRoundNum] = useState(0)
     const [countdown, setCountdown] = useState(5);
     const [cameraFlash, setCameraFlash] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
     const [score, setScore] = useState(0);
-
-    const scoreVecInit: number[] = [];
-    const [scoreVec, setScoreVec] = useState(scoreVecInit);
 
     useEffect(() => {
         getVideo();
@@ -89,7 +87,7 @@ export const Game = () => {
             setCameraFlash(true)
             setTimeout(() => {
                 setCameraFlash(false);
-                setGameState([false, false, false, true])
+                setGameState([false, false, false, true, false])
                 if (paintToCanvas()) takePhoto();
             }, 300)
         }, 5000);
@@ -97,7 +95,7 @@ export const Game = () => {
 
     const startGame = () => {
         gameTimer.current = setInterval(() => {
-            setGameState([false, false, true, false]);
+            setGameState([false, false, true, false, false]);
             setImageUrl("");
             const elem = document.getElementById("webcam");
             if (elem) elem.setAttribute("style", "display:auto") 
@@ -122,13 +120,14 @@ export const Game = () => {
                         });
                 }
             }, 6000)
-            const temp = scoreVec;
-            setScoreVec(temp)
         }, 10000)
 
         setTimeout(() => {
             clearInterval(gameTimer.current);
-        }, 60000)
+        }, props.rounds * 10000)
+        setTimeout(() => {
+            setGameState([false, false, false, false, true])
+        }, (props.rounds + 1) * 10000)
     }
 
     const StartButton = () => {
@@ -136,7 +135,7 @@ export const Game = () => {
             <button 
                 type="button" 
                 onClick={async () => {
-                    setGameState([false, true, false, false]);
+                    setGameState([false, true, false, false, false]);
                     doACountdown(10);
                     poseLandmarker = await createPoseLandmarker();
                     startGame();
@@ -169,8 +168,11 @@ export const Game = () => {
                 <div>
                     <div className="absolute top-2 w-full [text-shadow:_2px_2px_2px_black]">
                         <div className="flex flex-col justify-center items-center gap-2 w-full">
-                            <h1 className="text-2xl">Round {roundNum}</h1>
-                            <h1 className="text-5xl">{gameState[0] ? "Posers!" :  countdown}</h1>
+                            <h1 className="text-2xl">
+                                {!gameState[4] && <span>Round {roundNum}/{props.rounds}</span>}
+                                {!!gameState[4] && <span>Game Over!</span>}
+                            </h1>
+                            <h1 className="text-5xl">{gameState[0] || gameState[4] ? "Posers!" :  (gameState[3]) ? "" : countdown}</h1>
                         </div>
                     </div>
                     <div className="absolute top-1/2 w-full [text-shadow:_2px_2px_2px_black]">
@@ -182,11 +184,16 @@ export const Game = () => {
                         </div>
                     </div>
                     <div className="absolute bottom-10 w-full">
-                        <div className="flex justify-center items-center w-full">
+                        <div className="flex flex-col justify-center items-center gap-2 w-full">
                             { !gameState[0] ? 
                                 <div id="score" className="text-5xl [text-shadow:_2px_2px_2px_black]">Score: {score}</div>
                                 :
                                 <StartButton />
+                            }
+                            {
+                                gameState[4] && <Link href="/" className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+                                                    Play again?
+                                                </Link>
                             }
                         </div>
                     </div>
