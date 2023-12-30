@@ -1,10 +1,12 @@
 import { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
-import { createPoseLandmarker, getPoseData } from "./poseLandmarker";
+import { createPoseLandmarker, getPoseData, isCorrect } from "./poseLandmarker";
 import { api } from "~/utils/api";
 import Image from "next/image";
 
 export const Game = () => {
+    const { data: poseList } = api.pose.getPoseList.useQuery(6)
+
     const IMAGE_WIDTH = 414;
     const IMAGE_HEIGHT = 720;
 
@@ -20,9 +22,7 @@ export const Game = () => {
     const [countdown, setCountdown] = useState(5);
     const [cameraFlash, setCameraFlash] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
-
-    const argVecInit: number[] = [];
-    const [argVec, setArgVec] = useState(argVecInit);
+    const [score, setScore] = useState(0);
 
     const scoreVecInit: number[] = [];
     const [scoreVec, setScoreVec] = useState(scoreVecInit);
@@ -91,8 +91,6 @@ export const Game = () => {
                 setCameraFlash(false);
                 setGameState([false, false, false, true])
                 if (paintToCanvas()) takePhoto();
-                // if (elem) elem.setAttribute("style", "display:auto") //Show custImage now?
-                // getVideo(); //Show custImage now?
             }, 300)
         }, 5000);
     }
@@ -111,7 +109,13 @@ export const Game = () => {
                 if (imageRef.current) {
                     getPoseData(imageRef.current, poseLandmarker, IMAGE_WIDTH, IMAGE_HEIGHT)
                         .then(result => {
-                            setArgVec(result);
+                            if (poseList) {
+                                const elem = poseList.pop()
+                                if (elem) {
+                                    if (isCorrect(result, elem.landmarks)) setScore((prev) => prev + 1)
+                                    else setScore((prev) => prev - 1)
+                                }
+                            }
                         })
                         .catch(error => {
                             console.error("Error fetching pose data:", error);
@@ -124,7 +128,7 @@ export const Game = () => {
 
         setTimeout(() => {
             clearInterval(gameTimer.current);
-        }, 20000)
+        }, 60000)
     }
 
     const StartButton = () => {
@@ -150,10 +154,6 @@ export const Game = () => {
     return (
         <div className="h-screen flex flex-col justify-center items-center">
             <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
-                <div className="h-[32px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
-                <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
-                <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
-                <div className="h-[64px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
                 <video id="webcam" ref={videoRef} className="rounded-3xl" />
                 { imageUrl !== "" && 
                     <Image 
@@ -177,14 +177,14 @@ export const Game = () => {
                         <div className="flex justify-center items-center w-full">
                             <h1>
                                 {gameState[1] && <span className="text-3xl">Get ready to pose!</span>}
-                                {gameState[2] && <span className="text-5xl font-extrabold">T-Pose</span>}
+                                {gameState[2] && <span className="text-5xl font-extrabold">{ poseList?.[poseList?.length - 1]?.name }</span>}
                             </h1>
                         </div>
                     </div>
                     <div className="absolute bottom-10 w-full">
                         <div className="flex justify-center items-center w-full">
                             { !gameState[0] ? 
-                                <ScoreView name={"T-Pose"} landmarks={argVec} scoreVec={scoreVec} />
+                                <div id="score" className="text-5xl [text-shadow:_2px_2px_2px_black]">Score: {score}</div>
                                 :
                                 <StartButton />
                             }
@@ -193,39 +193,6 @@ export const Game = () => {
                 </div>}
                 <canvas ref={photoRef} className="hidden" />
             </div>
-        </div>
-    )
-}
-
-const ScoreView = (props: {name: string, landmarks: number[], scoreVec: number[]}) => {
-    const {data: result, isLoading} = api.pose.isCorrectPose.useQuery({name: props.name, landmarks: props.landmarks});
-    const initScore = props.scoreVec.reduce((acc, val) => acc + val, 0)
-    const [score, setScore] = useState(initScore)
-
-    useEffect(() => {
-        if (typeof result !== "undefined" && typeof result !== null && props.landmarks.length > 0) {
-            const elem = document.getElementById("score")
-            if (result) {
-                props.scoreVec.push(1)
-                setScore((prev) => prev + 1);
-                if (elem) elem.setAttribute("style", "color: rgb(74 222 128)")
-            }
-            else {
-                props.scoreVec.push(-1)
-                setScore((prev) => prev - 1);
-                if (elem) elem.setAttribute("style", "color: rgb(220 38 38)")
-            }
-
-            const len = props.landmarks.length;
-            for (let i = 0; i < len; i++) {
-                props.landmarks.pop();
-            }
-        }
-    }, [isLoading])
-
-    return (
-        <div id="score" className="text-5xl [text-shadow:_2px_2px_2px_black]">
-            Score: {score}
         </div>
     )
 }

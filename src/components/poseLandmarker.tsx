@@ -63,6 +63,7 @@ export const getPoseData = async (imageSrc: HTMLImageElement, poseLandmarker: Po
     if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
 
       const landmarks = result.landmarks[0]
+      //throw error here if landmarks is undefined
 
       let maxX = -1;
       let maxY = -1;
@@ -91,3 +92,29 @@ export const getPoseData = async (imageSrc: HTMLImageElement, poseLandmarker: Po
     })
     return returnResult;
   }
+
+  const cosineSimilarity = (vec1: number[], vec2: number[]) => {
+    //find dot product
+    let result = 0;
+    for (let i = 0; i < vec1.length; i++) {
+        const val1 = vec1[i];
+        const val2 = vec2[i];
+        if (val1 && val2) result += val1 * val2;
+    }
+
+    return result;
+}
+
+//returns scalar between 0 and 2
+const findEuclideanDist = (vec1: number[], vec2: number[]) => {
+    const similarity = cosineSimilarity(vec1, vec2);
+    return Math.sqrt(2 * (1 - similarity));
+}
+
+const margin = 0.15;
+export const isCorrect = (vec1: number[], vec2: number[]) => {
+    const score = findEuclideanDist(vec1, vec2);
+    console.log(vec1, vec2, score)
+    if (score <= margin) return true;
+    return false
+}

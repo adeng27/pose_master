@@ -1,8 +1,11 @@
 import Head from "next/head";
+import Image from "next/image";
+import { useState } from "react";
 import { Game } from "~/components/game";
-import { api } from "~/utils/api";
+import { Poses } from "~/components/poses";
 
 export default function Home() {
+  const [playGame, setPlayGame] = useState(false)
   //To add a pose
   // const {mutate: addPose} = api.pose.addPose.useMutation();
 
@@ -10,6 +13,19 @@ export default function Home() {
   // const addOnePose = (nameParam: string, landmarksParam: number[], poseNumParam: number) => {
   //   addPose({name: nameParam, landmarks: landmarksParam, poseNum: poseNumParam});
   // }
+
+  const PlayGameButton = () => {
+    return (
+      <div className="flex justify-center w-full">
+        <button 
+          onClick={() => setPlayGame(true)}
+          className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+        >
+          Start Posing!
+        </button>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -20,9 +36,27 @@ export default function Home() {
       </Head>
       <main className="">
         <div className="">
-          {/* {imageUrl !== "" && <Poses imageUrl={imageUrl} />} */}
           <div className="">
-            <Game />
+            {!playGame ? <div className="h-screen flex flex-col justify-center items-center">
+                <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
+                    <div className="absolute w-full top-10">
+                      <div className="flex flex-col justify-center items-center gap-2">
+                        <h1 className="text-7xl font-extrabold">POSERS</h1>
+                        <h3 className="text-lg">Created by Alastair Deng</h3>
+                      </div>
+                    </div>
+                    <div className="absolute w-full top-1/3">
+                      <div className="flex justify-center items-center">
+                        <Image src="/frontPose.png" width={250} height={250} alt="" />
+                      </div>
+                    </div>
+                    <div className="absolute w-full bottom-10">
+                      <PlayGameButton />
+                    </div>
+                </div>
+            </div>
+            :
+            <Game />}
           </div>
         </div>
       </main>
