@@ -185,7 +185,7 @@ export const Game = (props: { rounds: number }) => {
                         <div className="flex justify-center items-center w-full">
                             <h1>
                                 {gameState[1] && <span className="text-3xl">Get ready to pose!</span>}
-                                {gameState[2] && <span className="text-5xl font-extrabold">{ poseList?.[poseList?.length - 1]?.name }</span>}
+                                {gameState[2] && <span className="text-4xl font-extrabold">{ "Salute (Right)" }</span>}
                             </h1>
                         </div>
                     </div>

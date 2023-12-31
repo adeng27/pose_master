@@ -1,7 +1,10 @@
 import { Game } from "~/components/game";
+import Layout from "~/components/layout";
 
 export default function Play() {
     return (
-        <Game rounds={3} />
+        <Layout>
+            <Game rounds={3} />
+        </Layout>
     )
 }
