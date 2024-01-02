@@ -32,27 +32,43 @@ export default function Home() {
         <link rel="icon" href="/frontPose.png" />
       </Head>
       <Layout>
-      <main>
-        <div className="h-screen flex flex-col justify-center items-center">
-            <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
-                <div className="absolute w-full top-10">
-                  <div className="flex flex-col justify-center items-center gap-2">
-                    <h1 className="text-7xl font-extrabold">POSERS</h1>
-                    <h3 className="text-lg">Created by Alastair Deng</h3>
-                  </div>
-                </div>
-                <div className="absolute w-full top-1/3">
-                  <div className="flex justify-center items-center">
-                    <Image src="/frontPose.png" width={250} height={250} alt="" />
-                  </div>
-                </div>
-                <div className="absolute w-full bottom-10">
-                  <PlayGameButton />
-                </div>
-            </div>
+      <main className="relative">
+        <div className="h-screen flex justify-center items-center">
+          <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
+              <div className="absolute top-10 w-full flex flex-col justify-center items-center gap-2">
+                <h1 className="text-7xl font-extrabold">POSERS</h1>
+                <h3 className="text-lg">Created by Alastair Deng</h3>
+              </div>
+              <div className="absolute w-full top-1/3 flex justify-center items-center">
+                <Image src="/frontPose.png" width={250} height={250} alt="" />
+              </div>
+              <div className="absolute w-full bottom-10">
+                <PlayGameButton />
+              </div>
           </div>
+        </div>
+        <InfoBlurb />
       </main>
       </Layout>
     </>
   );
+}
+
+export const InfoBlurb = () => {
+  return (
+    <div className="absolute left-full top-0 hidden lg:flex lg:justify-center lg:items-center h-full w-full p-6">
+      <ul className="flex flex-col gap-4">
+        <li>
+          Don't know how to play? Check out <Link href="/how-to-play" className="text-blue-500 hover:underline">this</Link> page.
+        </li>
+        <li>
+          Posers! is being made into an IOS app! Follow Alastair Deng 
+          on <Link href="https://github.com/adeng27" className="text-blue-500 hover:underline" target="_blank">Github</Link> for more info.
+        </li>
+        <li>
+          Send feedback and questions to <span className="hover:underline text-blue-500">adeng27@stanford.edu</span>.
+        </li>
+      </ul>
+    </div>
+  )
 }

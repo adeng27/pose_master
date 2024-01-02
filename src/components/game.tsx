@@ -4,6 +4,7 @@ import { createPoseLandmarker, getPoseData, isCorrect } from "./poseLandmarker";
 import { api } from "~/utils/api";
 import Image from "next/image";
 import Link from "next/link";
+import { InfoBlurb } from "~/pages";
 
 export const Game = (props: { rounds: number }) => {
     const { data: poseList } = api.pose.getPoseList.useQuery(props.rounds)
@@ -151,7 +152,7 @@ export const Game = (props: { rounds: number }) => {
     }
 
     return (
-        <div className="h-screen flex flex-col justify-center items-center">
+        <div className="h-screen flex justify-center items-center relative">
             <div id="phone-case" className="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[720px] w-[414px]">
                 <video id="webcam" ref={videoRef} className="rounded-3xl" />
                 { imageUrl !== "" && 
@@ -166,46 +167,41 @@ export const Game = (props: { rounds: number }) => {
                 }
                 {cameraFlash ? <div className="w-full h-full bg-white rounded-3xl" /> :
                 <div>
-                    <div className="absolute top-2 w-full [text-shadow:_2px_2px_2px_black]">
-                        <div className="flex flex-col justify-center items-center gap-2 w-full">
-                            <h1 className="text-2xl">
-                                {!gameState[4] && <span>Round {roundNum}/{props.rounds}</span>}
-                                {!!gameState[4] && <span>Game Over!</span>}
-                            </h1>
-                            <h1 className="text-5xl">
-                                {gameState[0] && "Posers!"}
-                                {gameState[1] && countdown}
-                                {gameState[2] && countdown}
-                                {gameState[4] && "Posers!"}
+                    <div className="absolute top-2 [text-shadow:_2px_2px_2px_black] flex flex-col justify-center items-center gap-2 w-full">
+                        <h1 className="text-2xl">
+                            {!gameState[4] && <span>Round {roundNum}/{props.rounds}</span>}
+                            {!!gameState[4] && <span>Game Over!</span>}
+                        </h1>
+                        <h1 className="text-5xl">
+                            {gameState[0] && "Posers!"}
+                            {gameState[1] && countdown}
+                            {gameState[2] && countdown}
+                            {gameState[4] && "Posers!"}
 
-                            </h1>
-                        </div>
+                        </h1>
                     </div>
-                    <div className="absolute top-1/2 w-full [text-shadow:_2px_2px_2px_black]">
-                        <div className="flex justify-center items-center w-full">
-                            <h1>
-                                {gameState[1] && <span className="text-3xl">Get ready to pose!</span>}
-                                {gameState[2] && <span className="text-4xl font-extrabold">{ "Salute (Right)" }</span>}
-                            </h1>
-                        </div>
+                    <div className="absolute top-1/2 [text-shadow:_2px_2px_2px_black] flex justify-center items-center w-full">
+                        <h1>
+                            {gameState[1] && <span className="text-3xl">Get ready to pose!</span>}
+                            {gameState[2] && <span className="text-4xl font-extrabold">{ "Salute (Right)" }</span>}
+                        </h1>
                     </div>
-                    <div className="absolute bottom-10 w-full">
-                        <div className="flex flex-col justify-center items-center gap-2 w-full">
-                            { !gameState[0] ? 
-                                <div id="score" className="text-5xl [text-shadow:_2px_2px_2px_black]">Score: {score}</div>
-                                :
-                                <StartButton />
-                            }
-                            {
-                                gameState[4] && <Link href="/" className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
-                                                    Play again?
-                                                </Link>
-                            }
-                        </div>
+                    <div className="absolute bottom-10 flex flex-col justify-center items-center gap-2 w-full">
+                        { !gameState[0] ? 
+                            <div id="score" className="text-5xl [text-shadow:_2px_2px_2px_black]">Score: {score}</div>
+                            :
+                            <StartButton />
+                        }
+                        {
+                            gameState[4] && <Link href="/" className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+                                                Play again?
+                                            </Link>
+                        }
                     </div>
                 </div>}
                 <canvas ref={photoRef} className="hidden" />
             </div>
+            <InfoBlurb />
         </div>
     )
 }
