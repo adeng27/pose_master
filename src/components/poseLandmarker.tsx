@@ -64,7 +64,7 @@ export const getPoseData = async (imageSrc: HTMLImageElement, poseLandmarker: Po
     if (poseLandmarker) poseLandmarker.detect(imageSrc, (result) => {
 
       const landmarks = result.landmarks[0]
-      if (landmarks?.length === 0) toast.error("Pose not detected!")
+      if (landmarks?.length === 0 || typeof landmarks === "undefined") toast.error("Pose not detected!")
 
       let maxX = -1;
       let maxY = -1;
@@ -115,7 +115,7 @@ const findEuclideanDist = (vec1: number[], vec2: number[]) => {
 const margin = 0.15;
 export const isCorrect = (vec1: number[], vec2: number[]) => {
     const score = findEuclideanDist(vec1, vec2);
-    console.log(vec1, vec2, score)
+    console.log(vec1, vec2, score);
     if (score <= margin) return true;
     return false
 }
