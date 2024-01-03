@@ -5,9 +5,13 @@ import { api } from "~/utils/api";
 import Image from "next/image";
 import Link from "next/link";
 import { InfoBlurb } from "~/pages";
+import { useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
 
 export const Game = (props: { rounds: number }) => {
     const { data: poseList } = api.pose.getPoseList.useQuery(props.rounds)
+
+    const user = useUser();
 
     const IMAGE_WIDTH = 414;
     const IMAGE_HEIGHT = 720;
@@ -136,10 +140,13 @@ export const Game = (props: { rounds: number }) => {
             <button 
                 type="button" 
                 onClick={async () => {
-                    setGameState([false, true, false, false, false]);
-                    doACountdown(10);
-                    poseLandmarker = await createPoseLandmarker();
-                    startGame();
+                    if (user.isSignedIn) {
+                        setGameState([false, true, false, false, false]);
+                        doACountdown(10);
+                        poseLandmarker = await createPoseLandmarker();
+                        startGame();
+                    }
+                    else toast.error("Please sign in! (Completely FREE)")
                 }}
                 className="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500"
             >
