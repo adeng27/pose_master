@@ -58,6 +58,9 @@ export const InfoBlurb = () => {
   return (
     <div className="absolute left-full top-0 hidden lg:flex lg:justify-center lg:items-center h-full w-full p-6">
       <ul className="flex flex-col gap-4">
+        <li className="font-extrabold">
+          Posers! is still under development! Mechanics, bugs, and more are still being worked out.
+        </li>
         <li>
           Don't know how to play? Check out <Link href="/how-to-play" className="text-blue-500 hover:underline">this</Link> page.
         </li>
