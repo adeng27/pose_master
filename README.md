@@ -1,6 +1,6 @@
 # Posers!
 
-Website: [Posers!](https://pose-master.vercel.app/)
+Website: [Posers!](https://pose-master.vercel.app/) (**WARNING:** Website is no longer maintained. There are many bugs.)
 
 ## Description
 
